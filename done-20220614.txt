@@ -1,0 +1,4 @@
+- création dépôt de code sur GitHub
+- mise à jour des fichiers de base
+- ajout du projet au global "all github"
+- création icone du programme
