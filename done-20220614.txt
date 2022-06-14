@@ -2,3 +2,6 @@
 - mise à jour des fichiers de base
 - ajout du projet au global "all github"
 - création icone du programme
+- création du projet en Delphi FireMonkey
+- mise à jour des infos de version
+- attachement de l'icone au projet
