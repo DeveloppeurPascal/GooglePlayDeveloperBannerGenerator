@@ -6,6 +6,8 @@ uses
   System.Classes, System.Generics.Collections, fmx.Graphics;
 
 type
+  TGPBGProject = class;
+
   TGPBGHeaderBlock = class
   public
     procedure LoadFromStream(s: TStream);
@@ -15,23 +17,29 @@ type
   TGPBGGlobalBlock = class
   private const
     CGlobalBlockVersion = 1;
+
+  var
+    FProject: TGPBGProject;
   public
     procedure Clear;
     procedure LoadFromStream(s: TStream);
     procedure SaveToStream(s: TStream);
-    constructor Create;
+    constructor Create(ProjectOwner: TGPBGProject);
     destructor Destroy; override;
   end;
 
   TGPBGImageBlock = class
   private const
     CImageBlockVersion = 1;
+
+  var
+    FProject: TGPBGProject;
   protected
     FBitmap: TBitmap;
   public
     procedure LoadFromStream(s: TStream);
     procedure SaveToStream(s: TStream);
-    constructor Create;
+    constructor Create(ProjectOwner: TGPBGProject);
     destructor Destroy; override;
   end;
 
@@ -40,13 +48,16 @@ type
   TGPBGImagesListBlock = class
   private const
     CImagesListBlockVersion = 1;
+
+  var
+    FProject: TGPBGProject;
   protected
     FImages: TGPBGImageBlockList;
   public
     procedure Clear;
     procedure LoadFromStream(s: TStream);
     procedure SaveToStream(s: TStream);
-    constructor Create;
+    constructor Create(ProjectOwner: TGPBGProject);
     destructor Destroy; override;
   end;
 
@@ -93,8 +104,8 @@ end;
 
 constructor TGPBGProject.Create;
 begin
-  FGlobal := TGPBGGlobalBlock.Create;
-  FImagesList := TGPBGImagesListBlock.Create;
+  FGlobal := TGPBGGlobalBlock.Create(self);
+  FImagesList := TGPBGImagesListBlock.Create(self);
   Clear;
 end;
 
@@ -252,11 +263,12 @@ end;
 
 procedure TGPBGGlobalBlock.Clear;
 begin
-  TGPBGProject.Current.HasChanged := true;
+  FProject.HasChanged := true;
 end;
 
-constructor TGPBGGlobalBlock.Create;
+constructor TGPBGGlobalBlock.Create(ProjectOwner: TGPBGProject);
 begin
+  FProject := ProjectOwner;
 end;
 
 destructor TGPBGGlobalBlock.Destroy;
@@ -292,11 +304,12 @@ end;
 procedure TGPBGImagesListBlock.Clear;
 begin
   FImages.Clear;
-  TGPBGProject.Current.HasChanged := true;
+  FProject.HasChanged := true;
 end;
 
-constructor TGPBGImagesListBlock.Create;
+constructor TGPBGImagesListBlock.Create(ProjectOwner: TGPBGProject);
 begin
+  FProject := ProjectOwner;
   FImages := TGPBGImageBlockList.Create;
 end;
 
@@ -326,7 +339,7 @@ begin
 
   for var i := 0 to Nbimages - 1 do
   begin
-    Img := TGPBGImageBlock.Create;
+    Img := TGPBGImageBlock.Create(fproject);
     Img.LoadFromStream(s);
     FImages.Add(Img);
   end;
@@ -349,8 +362,9 @@ end;
 
 { TGPBGImageBlock }
 
-constructor TGPBGImageBlock.Create;
+constructor TGPBGImageBlock.Create(ProjectOwner: TGPBGProject);
 begin
+  FProject := ProjectOwner;
   FBitmap := TBitmap.Create;
 end;
 

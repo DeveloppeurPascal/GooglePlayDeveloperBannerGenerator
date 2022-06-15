@@ -1,0 +1,1 @@
+- correction de l'erreur Stack Overflow déclenchée en création du projet car on utilisait "current" en boucle avant qu'il ne soit renseigné
