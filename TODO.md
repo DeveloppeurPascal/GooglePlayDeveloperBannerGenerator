@@ -14,3 +14,7 @@
 * ajouter prise en charge de ESCape pour "close" du projet et sortir du programme si on est sur l'écran d'accueil
 
 * ajouter commentaires XML Doc dans les classes du fichier de description du format de stockage des projet
+
+* l'image générée ne doit pas dépasser 2 Mo =< vérifier ce qu'il en est et faire un JPEG si le PNG est trop volumineux (et ajuster le niveau de compression)
+
+* bug sur Mac, ne pas reprendre le chemin dans les noms de fichier sur les boites de dialogue car ce con l'enregistre avec !
