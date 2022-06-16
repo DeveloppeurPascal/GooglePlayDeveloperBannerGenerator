@@ -57,8 +57,9 @@ type
     FImages: TGPBGImageBlockList;
   public
     property Count: integer read GetCount;
-    function GetImage(i: integer): TGPBGImageBlock;
+    function GetImage(index: integer): TGPBGImageBlock;
     function AddImageFromFile(FileName: string): integer;
+    procedure DeleteImage(index: integer);
     procedure Clear;
     procedure LoadFromStream(s: TStream);
     procedure SaveToStream(s: TStream);
@@ -72,6 +73,7 @@ type
   TGPBGProject = class
   private Const
     CGPBGFileVersion = 1;
+    function GetProjectName: string;
 
   var
     FonHasChangedEvent: TGPBGHasChangedEvent;
@@ -87,6 +89,7 @@ type
     property onHasChangedEvent: TGPBGHasChangedEvent read FonHasChangedEvent
       write SetonHasChangedEvent;
     property FileName: string read FFileName;
+    property ProjectName: string read GetProjectName;
     property ImagesList: TGPBGImagesListBlock read FImagesList;
     class function Current: TGPBGProject;
     procedure LoadFromFile(FileName: string = '');
@@ -138,13 +141,20 @@ begin
   inherited;
 end;
 
+function TGPBGProject.GetProjectName: string;
+begin
+  result := tpath.GetFileNameWithoutExtension(TGPBGProject.Current.FileName);
+  if result.IsEmpty then
+    result := 'Project With No Name';
+end;
+
 procedure TGPBGProject.LoadFromFile(FileName: string);
 var
   F: TFileStream;
 begin
-  if (FileName.isempty) then
+  if (FileName.IsEmpty) then
   begin
-    if (FFileName.isempty) then
+    if (FFileName.IsEmpty) then
       raise exception.Create
         ('Unknow project file name. Can''t load the project !');
   end
@@ -196,9 +206,9 @@ procedure TGPBGProject.SaveToFile(FileName: string);
 var
   F: TFileStream;
 begin
-  if (FileName.isempty) then
+  if (FileName.IsEmpty) then
   begin
-    if (FFileName.isempty) then
+    if (FFileName.IsEmpty) then
       raise exception.Create
         ('Unknow project file name. Can''t save the project !');
   end
@@ -347,6 +357,14 @@ begin
   FImages := TGPBGImageBlockList.Create;
 end;
 
+procedure TGPBGImagesListBlock.DeleteImage(index: integer);
+begin
+  if (index < 0) or (index >= FImages.Count) then
+    exit;
+  FImages.Delete(index);
+  FProject.HasChanged := true;
+end;
+
 destructor TGPBGImagesListBlock.Destroy;
 begin
   FImages.Destroy;
@@ -358,12 +376,12 @@ begin
   result := FImages.Count;
 end;
 
-function TGPBGImagesListBlock.GetImage(i: integer): TGPBGImageBlock;
+function TGPBGImagesListBlock.GetImage(index: integer): TGPBGImageBlock;
 begin
-  if (i < 0) or (i >= FImages.Count) then
+  if (index < 0) or (index >= FImages.Count) then
     result := nil
   else
-    result := FImages[i];
+    result := FImages[index];
 end;
 
 procedure TGPBGImagesListBlock.LoadFromStream(s: TStream);

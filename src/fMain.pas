@@ -20,6 +20,7 @@ Const
   CIconShadowDistance = 0;
   CIconRadiusX = 10;
   CIconRadiusY = 10;
+  CBannerSizeMax = 1024 * 1024 * 2; // 2Mo, Google Play constraint
 
 type
   TfrmMain = class(TForm)
@@ -41,12 +42,7 @@ type
     AddImageDialog: TOpenDialog;
     btnExport: TButton;
     SaveBannerDialog: TSaveDialog;
-    Rectangle1: TRectangle;
-    ShadowEffect1: TShadowEffect;
-    Rectangle2: TRectangle;
-    ShadowEffect2: TShadowEffect;
-    Rectangle3: TRectangle;
-    ShadowEffect3: TShadowEffect;
+    Label1: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure btnOpenProjectClick(Sender: TObject);
     procedure btnCreateProjectClick(Sender: TObject);
@@ -56,6 +52,9 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure btnSaveClick(Sender: TObject);
     procedure btnExportClick(Sender: TObject);
+    procedure btnDeleteImageClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char;
+      Shift: TShiftState);
   private
     FProjectChanged: Boolean;
     procedure CalculeHauteurFlowLayout(fl: TFlowLayout);
@@ -67,6 +66,8 @@ type
       AHasChanged: Boolean);
     procedure CloseProject;
     procedure AddImageToImagesLayout(ImageIndex: Integer);
+    procedure RefreshFormCaption;
+    procedure ImageClickEvent(Sender: TObject);
   public
     { Déclarations publiques }
     property ProjectChanged: Boolean read FProjectChanged
@@ -83,6 +84,22 @@ implementation
 uses
   System.IOUtils, FMX.DialogService;
 
+type
+  TImageWithStroke = class(timage)
+  private
+    FisChecked: Boolean;
+    FonImageClick: tnotifyevent;
+    procedure SetisChecked(const Value: Boolean);
+    procedure SetonImageClick(const Value: tnotifyevent);
+  protected
+    procedure ImageClick(Sender: TObject);
+  public
+    property isChecked: Boolean read FisChecked write SetisChecked;
+    property onImageClick: tnotifyevent read FonImageClick
+      write SetonImageClick;
+    constructor Create(AOwner: TComponent); override;
+  end;
+
 procedure TfrmMain.btnAddImageClick(Sender: TObject);
 var
   ImgFileName: string;
@@ -91,8 +108,14 @@ begin
   AddImageDialog.Title := 'Choose an image (' + CIconWidth.ToString + 'x' +
     CIconHeight.ToString + 'px)';
 
-  if AddImageDialog.InitialDir.IsEmpty then
-    AddImageDialog.InitialDir := tpath.GetDocumentsPath;
+  if not string(AddImageDialog.FileName).IsEmpty then
+  begin
+    AddImageDialog.InitialDir := tpath.GetDirectoryName
+      (AddImageDialog.FileName);
+    AddImageDialog.FileName := '';
+  end
+  else if AddImageDialog.InitialDir.IsEmpty then
+    AddImageDialog.InitialDir := tpath.GetPicturesPath;
   // TODO : éventuellement enregistrer le dossier pour le proposer lors du lancement suivant du programme
 
   if AddImageDialog.Execute then
@@ -133,6 +156,22 @@ begin
   GoToProjectScreen;
 end;
 
+procedure TfrmMain.btnDeleteImageClick(Sender: TObject);
+var
+  img: TImageWithStroke;
+  i: Integer;
+begin
+  for i := ImagesLayout.ChildrenCount - 1 downto 0 do
+    if (ImagesLayout.Children[i] is TImageWithStroke) and
+      (ImagesLayout.Children[i] as TImageWithStroke).isChecked then
+    begin
+      img := ImagesLayout.Children[i] as TImageWithStroke;
+      TGPBGProject.Current.ImagesList.DeleteImage(img.tag);
+      img.Free;
+    end;
+  LoadImagesList;
+end;
+
 procedure TfrmMain.btnExportClick(Sender: TObject);
 var
   FileName: string;
@@ -142,17 +181,22 @@ var
   S: TShadowEffect;
   x, y: single;
 begin
-  if SaveBannerDialog.InitialDir.IsEmpty then
-    if TGPBGProject.Current.FileName.IsEmpty then
-      SaveBannerDialog.InitialDir := tpath.GetDocumentsPath
-    else
-    begin
-      SaveBannerDialog.InitialDir := tpath.GetDirectoryName
-        (TGPBGProject.Current.FileName);
-      SaveBannerDialog.FileName := tpath.Combine(SaveBannerDialog.InitialDir,
-        tpath.GetFileNameWithoutExtension(TGPBGProject.Current.FileName) + '-' +
-        CBannerWidth.ToString + 'x' + CBannerHeight.ToString + '.png');
-    end;
+  if not string(SaveBannerDialog.FileName).IsEmpty then
+  begin
+    SaveBannerDialog.InitialDir := tpath.GetDirectoryName
+      (SaveBannerDialog.FileName);
+    SaveBannerDialog.FileName := tpath.GetFileName(SaveBannerDialog.FileName);
+  end
+  else if TGPBGProject.Current.FileName.IsEmpty then
+    SaveBannerDialog.InitialDir := tpath.GetDocumentsPath
+  else
+  begin
+    SaveBannerDialog.InitialDir := tpath.GetDirectoryName
+      (TGPBGProject.Current.FileName);
+    SaveBannerDialog.FileName := tpath.GetFileNameWithoutExtension
+      (TGPBGProject.Current.FileName) + '-' + CBannerWidth.ToString + 'x' +
+      CBannerHeight.ToString + '.png';
+  end;
   // TODO : éventuellement enregistrer le dossier pour le proposer lors du lancement suivant du programme
 
   if SaveBannerDialog.Execute then
@@ -201,11 +245,19 @@ begin
       BMP := Banner.MakeScreenshot;
       try
         BMP.SaveToFile(FileName);
+        if (tfile.GetSize(FileName) >= CBannerSizeMax) then
+        begin
+          raise exception.Create('PNG file is too big (more than 2Mb) !');
+          // TODO : à changer en JPEG si on trouve comment changer le degrès de compression de l'image (et mettre un background)
+          // tfile.Delete(FileName);
+          // FileName := tpath.ChangeExtension(FileName, 'jpg');
+          // BMP.SaveToFile(FileName);
+        end;
       finally
-        BMP.free;
+        BMP.Free;
       end;
     finally
-      Banner.free;
+      Banner.Free;
     end;
 
     ShowMessage('Export done.');
@@ -227,6 +279,9 @@ begin
       raise exception.Create('Please choose a file to open a project.');
     if not tfile.Exists(FileName) then
       raise exception.Create('File ' + FileName + ' doesn''t exist !');
+    OpenProjectDialog.InitialDir := tpath.GetDirectoryName
+      (OpenProjectDialog.FileName);
+    OpenProjectDialog.FileName := '';
     TGPBGProject.Current.onHasChangedEvent := ProjectHasChangedEvent;
     TGPBGProject.Current.LoadFromFile(FileName);
     GoToProjectScreen;
@@ -252,6 +307,7 @@ begin
   end
   else
     TGPBGProject.Current.SaveToFile;
+  RefreshFormCaption;
 end;
 
 procedure TfrmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -279,14 +335,76 @@ end;
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   TabControl1.ActiveTab := tiOpenCreate;
+{$IFNDEF DEBUG}
+  Label1.Free;
+{$ENDIF}
+end;
+
+procedure TfrmMain.FormKeyDown(Sender: TObject; var Key: Word;
+var KeyChar: Char; Shift: TShiftState);
+begin
+  if Key = vkEscape then
+  begin
+    Key := 0;
+    KeyChar := #0;
+    if TabControl1.ActiveTab = tiOpenCreate then
+      Close
+    else if TabControl1.ActiveTab = tiProject then
+      btnCloseClick(btnClose);
+  end
+  else if (Key = vkS) and ([ssctrl] = Shift) and
+    (TabControl1.ActiveTab = tiProject) then // Ctrl+S
+  begin
+    Key := 0;
+    KeyChar := #0;
+    if btnSave.Enabled then
+      btnSaveClick(btnSave);
+  end;
+
+{$IFDEF DEBUG}
+  // Log the pressed key(s) in a footer label
+  Label1.Text := Key.ToString + ' "' + KeyChar + '"';
+  if ssctrl in Shift then
+    Label1.Text := Label1.Text + ' Ctrl';
+  if ssShift in Shift then
+    Label1.Text := Label1.Text + ' Shift';
+  if ssAlt in Shift then
+    Label1.Text := Label1.Text + ' Alt';
+{$ENDIF}
 end;
 
 procedure TfrmMain.GoToProjectScreen;
 begin
+  tagstring := caption;
+  RefreshFormCaption;
   ProjectChanged := false;
   btnDeleteImage.Enabled := false;
   LoadImagesList;
   TabControl1.ActiveTab := tiProject;
+end;
+
+procedure TfrmMain.ImageClickEvent(Sender: TObject);
+var
+  img: TImageWithStroke;
+  i: Integer;
+  ImgChecked: Boolean;
+begin
+  ImgChecked := false;
+  if (Sender is TImageWithStroke) and (Sender as TImageWithStroke).isChecked
+  then
+    ImgChecked := true
+  else
+  begin
+    for i := 0 to ImagesLayout.ChildrenCount - 1 do
+      if (ImagesLayout.Children[i] is TImageWithStroke) and
+        (ImagesLayout.Children[i] as TImageWithStroke).isChecked then
+      begin
+        ImgChecked := true;
+        break;
+      end;
+  end;
+
+  btnDeleteImage.Enabled := ImgChecked;
 end;
 
 procedure TfrmMain.ImagesLayoutResize(Sender: TObject);
@@ -301,11 +419,13 @@ var
 begin
   // Empty ImagesLayout
   while ImagesLayout.ChildrenCount > 0 do
-    ImagesLayout.Children[0].free;
+    ImagesLayout.Children[0].Free;
 
   // Add images from project
   for i := 0 to TGPBGProject.Current.ImagesList.count - 1 do
     AddImageToImagesLayout(i);
+
+  ImageClickEvent(nil);
 
   // Resize TFlowLayout (ImagesLayout)
   CalculeHauteurFlowLayout(ImagesLayout);
@@ -315,6 +435,11 @@ procedure TfrmMain.ProjectHasChangedEvent(AProject: TGPBGProject;
 AHasChanged: Boolean);
 begin
   ProjectChanged := AHasChanged;
+end;
+
+procedure TfrmMain.RefreshFormCaption;
+begin
+  caption := tagstring + ' - ' + TGPBGProject.Current.ProjectName;
 end;
 
 procedure TfrmMain.SetProjectChanged(const Value: Boolean);
@@ -348,18 +473,25 @@ end;
 procedure TfrmMain.CloseProject;
 begin
   TGPBGProject.Current.Clear;
+  AddImageDialog.FileName := '';
+  AddImageDialog.InitialDir := '';
+  SaveProjectDialog.FileName := '';
+  SaveProjectDialog.InitialDir := '';
+  SaveBannerDialog.FileName := '';
+  SaveBannerDialog.InitialDir := '';
+  caption := tagstring;
   TabControl1.ActiveTab := tiOpenCreate;
 end;
 
 procedure TfrmMain.AddImageToImagesLayout(ImageIndex: Integer);
 var
-  img: TImage;
+  img: TImageWithStroke;
 begin
   if (ImageIndex < 0) or (ImageIndex >= TGPBGProject.Current.ImagesList.count)
   then
     exit;
 
-  img := TImage.Create(self);
+  img := TImageWithStroke.Create(self);
   img.Parent := ImagesLayout;
   img.Width := CIconWidth;
   img.Height := CIconHeight;
@@ -369,7 +501,66 @@ begin
   img.Margins.bottom := 5;
   img.Bitmap.Assign(TGPBGProject.Current.ImagesList.GetImage
     (ImageIndex).Bitmap);
-  // TODO : ajouter le traitement du clic sur l'image
+  img.onImageClick := ImageClickEvent;
+  img.tag := ImageIndex;
+end;
+
+{ TImageWithStroke }
+
+constructor TImageWithStroke.Create(AOwner: TComponent);
+begin
+  inherited;
+  tagobject := nil;
+  onImageClick := nil;
+  FisChecked := false;
+  onclick := ImageClick;
+  hittest := true;
+end;
+
+procedure TImageWithStroke.ImageClick(Sender: TObject);
+begin
+  isChecked := not isChecked;
+  if assigned(onImageClick) then
+    onImageClick(self);
+end;
+
+procedure TImageWithStroke.SetisChecked(const Value: Boolean);
+var
+  R: TRectangle;
+begin
+  if FisChecked = Value then
+    exit;
+
+  FisChecked := Value;
+  if FisChecked then
+  begin
+    R := TRectangle.Create(self);
+    R.Parent := self;
+    R.Align := talignlayout.Client;
+    R.Stroke.Kind := tbrushkind.Solid;
+    R.Stroke.Color := talphacolors.red;
+    R.Stroke.Dash := tstrokedash.DashDotDot;
+    R.Stroke.Thickness := 4;
+    R.fill.Kind := tbrushkind.Solid;
+    R.fill.Color := talphacolors.White;
+    R.Opacity := 0.3;
+    R.hittest := false;
+    R.Margins.top := -R.Stroke.Thickness / 2;
+    R.Margins.right := R.Margins.top;
+    R.Margins.bottom := R.Margins.top;
+    R.Margins.Left := R.Margins.top;
+    tagobject := R;
+  end
+  else if assigned(tagobject) and (tagobject is TRectangle) then
+  begin
+    (tagobject as TRectangle).Free;
+    tagobject := nil;
+  end;
+end;
+
+procedure TImageWithStroke.SetonImageClick(const Value: tnotifyevent);
+begin
+  FonImageClick := Value;
 end;
 
 initialization

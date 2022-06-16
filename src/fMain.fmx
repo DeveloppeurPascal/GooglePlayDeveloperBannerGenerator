@@ -9,20 +9,21 @@ object frmMain: TfrmMain
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnCloseQuery = FormCloseQuery
+  OnKeyDown = FormKeyDown
   DesignerMasterStyle = 0
   object TabControl1: TTabControl
     Align = Client
     Size.Width = 640.000000000000000000
-    Size.Height = 480.000000000000000000
+    Size.Height = 463.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 1
     TabOrder = 0
     TabPosition = None
     Sizes = (
       640s
-      480s
+      463s
       640s
-      480s)
+      463s)
     object tiOpenCreate: TTabItem
       CustomIcon = <
         item
@@ -120,6 +121,7 @@ object frmMain: TfrmMain
           Size.PlatformDefault = False
           TabOrder = 1
           Text = 'Delete Image'
+          OnClick = btnDeleteImageClick
         end
         object btnClose: TButton
           Align = MostRight
@@ -132,7 +134,7 @@ object frmMain: TfrmMain
           Size.Width = 80.000000000000000000
           Size.Height = 50.000000000000000000
           Size.PlatformDefault = False
-          TabOrder = 2
+          TabOrder = 4
           Text = 'Close'
           OnClick = btnCloseClick
         end
@@ -162,7 +164,7 @@ object frmMain: TfrmMain
           Size.Width = 160.000000000000000000
           Size.Height = 50.000000000000000000
           Size.PlatformDefault = False
-          TabOrder = 4
+          TabOrder = 2
           Text = 'Export banner'
           OnClick = btnExportClick
         end
@@ -170,11 +172,11 @@ object frmMain: TfrmMain
       object VertScrollBox1: TVertScrollBox
         Align = Client
         Size.Width = 640.000000000000000000
-        Size.Height = 420.000000000000000000
+        Size.Height = 403.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
         Viewport.Width = 640.000000000000000000
-        Viewport.Height = 420.000000000000000000
+        Viewport.Height = 403.000000000000000000
         object ImagesLayout: TFlowLayout
           Align = Top
           Size.Width = 640.000000000000000000
@@ -185,65 +187,6 @@ object frmMain: TfrmMain
           JustifyLastLine = Left
           FlowDirection = LeftToRight
           OnResize = ImagesLayoutResize
-          object Rectangle1: TRectangle
-            Fill.Color = claTurquoise
-            Margins.Left = 8.000000000000000000
-            Margins.Top = 8.000000000000000000
-            Margins.Right = 8.000000000000000000
-            Margins.Bottom = 8.000000000000000000
-            Position.X = 8.000000000000000000
-            Position.Y = 8.000000000000000000
-            Size.Width = 50.000000000000000000
-            Size.Height = 50.000000000000000000
-            Size.PlatformDefault = False
-            Stroke.Kind = None
-            XRadius = 10.000000000000000000
-            YRadius = 10.000000000000000000
-            object ShadowEffect1: TShadowEffect
-              Softness = 0.300000011920929000
-              Opacity = 0.600000023841857900
-              ShadowColor = claBlack
-            end
-          end
-          object Rectangle2: TRectangle
-            Fill.Kind = None
-            Margins.Left = 8.000000000000000000
-            Margins.Top = 8.000000000000000000
-            Margins.Right = 8.000000000000000000
-            Margins.Bottom = 8.000000000000000000
-            Position.X = 74.000000000000000000
-            Position.Y = 8.000000000000000000
-            Size.Width = 50.000000000000000000
-            Size.Height = 50.000000000000000000
-            Size.PlatformDefault = False
-            Stroke.Kind = None
-            XRadius = 10.000000000000000000
-            YRadius = 10.000000000000000000
-            object ShadowEffect2: TShadowEffect
-              Softness = 0.300000011920929000
-              Opacity = 0.600000023841857900
-              ShadowColor = claBlack
-            end
-          end
-          object Rectangle3: TRectangle
-            Margins.Left = 8.000000000000000000
-            Margins.Top = 8.000000000000000000
-            Margins.Right = 8.000000000000000000
-            Margins.Bottom = 8.000000000000000000
-            Position.X = 140.000000000000000000
-            Position.Y = 8.000000000000000000
-            Size.Width = 50.000000000000000000
-            Size.Height = 50.000000000000000000
-            Size.PlatformDefault = False
-            Stroke.Kind = None
-            XRadius = 10.000000000000000000
-            YRadius = 10.000000000000000000
-            object ShadowEffect3: TShadowEffect
-              Softness = 0.300000011920929000
-              Opacity = 0.600000023841857900
-              ShadowColor = claBlack
-            end
-          end
         end
       end
     end
@@ -271,8 +214,8 @@ object frmMain: TfrmMain
     FilterIndex = 3
     Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Title = 'Choose an image'
-    Left = 296
-    Top = 408
+    Left = 520
+    Top = 416
   end
   object SaveBannerDialog: TSaveDialog
     DefaultExt = 'png'
@@ -280,5 +223,14 @@ object frmMain: TfrmMain
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 400
     Top = 408
+  end
+  object Label1: TLabel
+    Align = Bottom
+    Position.Y = 463.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Label1'
+    TabOrder = 5
   end
 end
