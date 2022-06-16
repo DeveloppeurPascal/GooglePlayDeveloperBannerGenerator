@@ -18,3 +18,7 @@
 * l'image générée ne doit pas dépasser 2 Mo =< vérifier ce qu'il en est et faire un JPEG si le PNG est trop volumineux (et ajuster le niveau de compression)
 
 * bug sur Mac, ne pas reprendre le chemin dans les noms de fichier sur les boites de dialogue car ce con l'enregistre avec !
+
+* associer l'extension GPBG au programme sous Windows
+* associer l'extension GPBG au programme sous Linux (si possible)
+* associer l'extension GPBG au programme sous Mac
