@@ -8,7 +8,8 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.TabControl,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.Layouts, uProjectGPBG,
   Data.Bind.EngExt, FMX.Bind.DBEngExt, System.Rtti, System.Bindings.Outputs,
-  FMX.Bind.Editors, Data.Bind.Components, FMX.Edit, FMX.Objects, FMX.Effects;
+  FMX.Bind.Editors, Data.Bind.Components, FMX.Edit, FMX.Objects, FMX.Effects,
+  Olf.FMX.AboutDialog;
 
 Const
   CBannerWidth = 4096;
@@ -43,6 +44,8 @@ type
     btnExport: TButton;
     SaveBannerDialog: TSaveDialog;
     Label1: TLabel;
+    OlfAboutDialog1: TOlfAboutDialog;
+    btnAbout: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnOpenProjectClick(Sender: TObject);
     procedure btnCreateProjectClick(Sender: TObject);
@@ -55,6 +58,8 @@ type
     procedure btnDeleteImageClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char;
       Shift: TShiftState);
+    procedure btnAboutClick(Sender: TObject);
+    procedure OlfAboutDialog1URLClick(const AURL: string);
   private
     FProjectChanged: Boolean;
     procedure CalculeHauteurFlowLayout(fl: TFlowLayout);
@@ -82,7 +87,7 @@ implementation
 {$R *.fmx}
 
 uses
-  System.IOUtils, FMX.DialogService, FMX.Platform;
+  System.IOUtils, FMX.DialogService, FMX.Platform, u_urlOpen;
 
 type
   TImageWithStroke = class(timage)
@@ -99,6 +104,11 @@ type
       write SetonImageClick;
     constructor Create(AOwner: TComponent); override;
   end;
+
+procedure TfrmMain.btnAboutClick(Sender: TObject);
+begin
+  OlfAboutDialog1.Execute;
+end;
 
 procedure TfrmMain.btnAddImageClick(Sender: TObject);
 var
@@ -441,6 +451,11 @@ begin
 
   // Resize TFlowLayout (ImagesLayout)
   CalculeHauteurFlowLayout(ImagesLayout);
+end;
+
+procedure TfrmMain.OlfAboutDialog1URLClick(const AURL: string);
+begin
+  url_Open_In_Browser(AURL);
 end;
 
 procedure TfrmMain.ProjectHasChangedEvent(AProject: TGPBGProject;
