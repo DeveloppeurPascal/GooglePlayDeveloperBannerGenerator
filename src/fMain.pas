@@ -82,7 +82,7 @@ implementation
 {$R *.fmx}
 
 uses
-  System.IOUtils, FMX.DialogService;
+  System.IOUtils, FMX.DialogService, FMX.Platform;
 
 type
   TImageWithStroke = class(timage)
@@ -180,6 +180,8 @@ var
   R: TRectangle;
   S: TShadowEffect;
   x, y: single;
+  FMXScreenService: IFMXScreenService;
+  BMPScale: single;
 begin
   if not string(SaveBannerDialog.FileName).IsEmpty then
   begin
@@ -206,26 +208,35 @@ begin
       raise exception.Create
         ('Please choose a file name for the exported banner.');
 
+    if SupportsPlatformService(IFMXScreenService, FMXScreenService) then
+      BMPScale := FMXScreenService.GetScreenScale
+    else
+      BMPScale := 1;
+
+    // showmessage(bmpscale.ToString);exit;
+
     Banner := TRectangle.Create(self);
     try
       Banner.Parent := self;
-      Banner.Width := CBannerWidth;
-      Banner.Height := CBannerHeight;
+      Banner.Width := CBannerWidth / BMPScale;
+      Banner.Height := CBannerHeight / BMPScale;
       Banner.Stroke.Kind := tbrushkind.None;
-      Banner.fill.Kind := tbrushkind.None;
+      Banner.fill.Kind := tbrushkind.Solid;
+      Banner.fill.Color := talphacolors.White;
+      // TODO : add an option to choose this color
 
-      y := -random(CIconHeight);
+      y := -random(CIconHeight) / BMPScale;
       while (y < Banner.Height) do
       begin
-        x := -random(CIconWidth);
+        x := -random(CIconWidth) / BMPScale;
         while (x < Banner.Width) do
         begin
           R := TRectangle.Create(Banner);
           R.Parent := Banner;
           R.Position.x := x;
           R.Position.y := y;
-          R.Width := CIconWidth;
-          R.Height := CIconHeight;
+          R.Width := CIconWidth / BMPScale;
+          R.Height := CIconHeight / BMPScale;
           R.Stroke.Kind := tbrushkind.None;
           R.fill.Kind := tbrushkind.Bitmap;
           R.fill.Bitmap.WrapMode := twrapmode.TileStretch;
@@ -237,12 +248,13 @@ begin
           S.Parent := R;
           S.Distance := CIconShadowDistance;
           S.Direction := CIconShadowDirection;
-          x := x + CIconWidth + CIconMargin;
+          x := x + (CIconWidth + CIconMargin) / BMPScale;
         end;
-        y := y + CIconHeight + CIconMargin;
+        y := y + (CIconHeight + CIconMargin) / BMPScale;
       end;
 
       BMP := Banner.MakeScreenshot;
+      // showmessage (bmp.BitmapScale.tostring);
       try
         BMP.SaveToFile(FileName);
         if (tfile.GetSize(FileName) >= CBannerSizeMax) then
