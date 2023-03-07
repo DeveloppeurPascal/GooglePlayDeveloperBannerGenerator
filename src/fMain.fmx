@@ -250,7 +250,7 @@ object frmMain: TfrmMain
   end
   object OlfAboutDialog1: TOlfAboutDialog
     Titre = 'Google Play Developer Banner Generator'
-    VersionNumero = '1.0'
+    VersionNumero = '1.2'
     VersionDate = '20230307'
     MultiResBitmap.Height = 512
     MultiResBitmap.Width = 512
