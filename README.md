@@ -16,6 +16,12 @@ This code repository contains a project developed in Object Pascal language unde
 
 This program use a specific project file format in *.gpbg files. Look at [the specifications](GPBG-File-Description.md) if you want to use them in your programs or add features.
 
+## Talks and conferences
+
+### Twitch
+
+Follow my development streams of software, video games, mobile applications and websites on [my Twitch channel](https://www.twitch.tv/patrickpremartin) or as replays on [Serial Streameur](https://serialstreameur.fr) mostly in French.
+
 ## Install
 
 To download this project you better should use "git" command but you also can download a ZIP from [its GitHub repository](https://github.com/DeveloppeurPascal/GooglePlayDeveloperBannerGenerator).

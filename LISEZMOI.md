@@ -1,6 +1,6 @@
 # Google Play Developer Banner Generator
 
-[This page in english.](README.md)
+[This page in English.](README.md)
 
 Génère une image PNG ou JPEG de 4096x2304 pixels pour la page développeur de Google Play.
 
@@ -13,6 +13,12 @@ Plus de détails sur le code source sont disponibles sur le blog [Developpeur Pa
 Si vous souhaitez partager le projet, partagez ce lien [https://googleplaydeveloperbannergenerator.olfsoftware.fr/](https://googleplaydeveloperbannergenerator.olfsoftware.fr/) ou l'adresse de [ce dépôt de code](https://github.com/DeveloppeurPascal/GooglePlayDeveloperBannerGenerator).
 
 Ce dépôt de code contient un projet développé en langage Pascal Objet sous Delphi. Vous ne savez pas ce qu'est Dephi ni où le télécharger ? Vous en saurez plus [sur ce site web](https://delphi-resources.developpeur-pascal.fr/).
+
+## Présentations et conférences
+
+### Twitch
+
+Suivez mes streams de développement de logiciels, jeux vidéo, applications mobiles et sites web sur [ma chaîne Twitch](https://www.twitch.tv/patrickpremartin) ou en rediffusion sur [Serial Streameur](https://serialstreameur.fr) la plupart du temps en français.
 
 ## Installation
 
@@ -39,7 +45,7 @@ Ce programme utilise des fichiers *.gpbg pour stocker les projets. Consulter [le
 
 ## Modèle de licence double
 
-Ce projet est distribué sous licence [AGPL 3.0 ou ultérieure] (https://choosealicense.com/licenses/agpl-3.0/).
+Ce projet est distribué sous licence [AGPL 3.0 ou ultérieure](https://choosealicense.com/licenses/agpl-3.0/).
 
 Si vous voulez l'utiliser en totalité ou en partie dans vos projets mais ne voulez pas en partager les sources ou ne voulez pas distribuer votre projet sous la même licence, vous pouvez acheter le droit de l'utiliser sous la licence [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) ou une licence dédiée ([contactez l'auteur](https://developpeur-pascal.fr/nous-contacter.php) pour discuter de vos besoins).
 
